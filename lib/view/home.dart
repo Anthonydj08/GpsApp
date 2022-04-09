@@ -1,8 +1,15 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gps_app/constants.dart';
+import 'package:gps_app/controller/localController.dart';
+import 'package:gps_app/controller/rotaController.dart';
 import 'package:gps_app/model/localModel.dart';
 import 'package:geocoding/geocoding.dart' as Geocoding;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:gps_app/model/rotaModel.dart';
 import 'package:location/location.dart';
 
 import 'package:sizer/sizer.dart';
@@ -19,12 +26,16 @@ class _BodyState extends State<Home> {
   late LocationData _userLocation;
   late Location _location;
   late LocalModel local;
+  late RotaModel rota;
   String street = "";
   LatLng _local = const LatLng(0.0, 0.0);
   late GoogleMapController _googleMapController;
+  late bool click = false;
   String tempo = "00:00:00";
   late final stopwatch = Stopwatch();
-
+  RotaController rotaController = RotaController();
+  LocalController localController = LocalController();
+  String status = 'Parado';
   _BodyState();
 
   @override
@@ -37,6 +48,22 @@ class _BodyState extends State<Home> {
   void initState() {
     super.initState();
     _getUserLocation();
+  }
+
+  void startServiceInAndroid() async {
+    if (Platform.isAndroid) {
+      var method = const MethodChannel("com.example.gps_app.messages");
+      String data = await method.invokeMethod("startService");
+      debugPrint(data);
+    }
+  }
+
+  void stopServiceInAndroid() async {
+    if (Platform.isAndroid) {
+      var method = const MethodChannel("com.example.gps_app.messages");
+      String data = await method.invokeMethod("stopService");
+      debugPrint(data);
+    }
   }
 
   Future<void> _verificaPermissoes() async {
@@ -66,6 +93,7 @@ class _BodyState extends State<Home> {
     String street = "";
     _local = LatLng(_userLocation.latitude!, _userLocation.longitude!);
     Future<List<Geocoding.Placemark>> places;
+    print(_local);
 
     setState(
       () {
@@ -93,6 +121,68 @@ class _BodyState extends State<Home> {
     stopwatch.reset();
   }
 
+  _novaRota() {
+    _watchStart();
+    DateTime newDate = DateTime.now();
+    String date = newDate.toString().substring(0, 10);
+    rota = RotaModel(titulo: date, tempo: tempo);
+    rotaController.salvarRota(rota);
+
+    rotaController.listarRotas().then(
+      (value) {
+        rota = value[value.length - 1];
+      },
+    );
+    localController.listarLocais().then(
+      (value) {
+        local = value[value.length - 1];
+      },
+    );
+  }
+
+  _finalizaRota() async {
+    _watchStop();
+    rota = await rotaController.buscarUltimaRota();
+    var editRota = RotaModel(
+      id: rota.id,
+      titulo: rota.titulo,
+      tempo: tempo,
+    );
+    rotaController.atualizarRota(editRota, tempo);
+  }
+
+  _novoLocal() async {
+    rota = await rotaController.buscarUltimaRota();
+    int idRota = rota.id!;
+    local = LocalModel(
+        latitude: _userLocation.latitude!.toString(),
+        longitude: _userLocation.longitude!.toString(),
+        idRota: idRota,);
+    localController.salvarLocal(local);
+  }
+
+  _ButtomClick() {
+    click == false ? click = true : click = false;
+    if (click == true) {
+      _novaRota();
+      _novoLocal();
+    }
+    _novaPosicao();
+  }
+
+  _novaPosicao() {
+    if (click == true) {
+      Timer(
+        const Duration(seconds: 60),
+        () => [_getUserLocation(), _novoLocal(), _novaPosicao()],
+      );
+      status = 'Em execução';
+    } else {
+      _finalizaRota();
+      status = 'Parado';
+    }
+  }
+
   void _createdMap(GoogleMapController controller) {
     _googleMapController = controller;
     _location.onLocationChanged.listen((event) {
@@ -111,12 +201,18 @@ class _BodyState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
+       appBar: AppBar(
+        title: const Text(
+          "Home",
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
       ),
-      //build map view
-
       body: SingleChildScrollView(
+        physics: NeverScrollableScrollPhysics(),
         child: SizedBox(
           height: 100.h,
           child: Column(
@@ -132,7 +228,6 @@ class _BodyState extends State<Home> {
                   child: Card(
                     color: kPrimaryLightColor,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(2.h),
                       side: BorderSide(
                         color: kPrimaryLightColor,
                         width: 0.5.w,
@@ -142,7 +237,7 @@ class _BodyState extends State<Home> {
                       child: Column(
                         children: [
                           SizedBox(
-                            height: 55.h,
+                            height: 60.h,
                             child: GoogleMap(
                               initialCameraPosition: CameraPosition(
                                 target: _local,
@@ -155,13 +250,7 @@ class _BodyState extends State<Home> {
                                   _createdMap(controller),
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 6.0),
-                            child: Text(street,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.bold)),
-                          ),
+                          //add button
                         ],
                       ),
                       splashColor: kPrimaryColor.withAlpha(30),
@@ -170,18 +259,74 @@ class _BodyState extends State<Home> {
                   ),
                 ),
               ),
+              Center(
+                child: SizedBox(
+                  width: 60.w,
+                  height: 11.h,
+                  child: Card(
+                    color: Color.fromARGB(255, 212, 212, 212),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(2.h),
+                      side: BorderSide(
+                        color: kPrimaryLightColor,
+                        width: 0.5.w,
+                      ),
+                    ),
+                    child: InkWell(
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: 10.h,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  click == true ? 'Parar' : 'Iniciar',
+                                  style: TextStyle(
+                                    fontSize: 20.sp,
+                                    color: click == true
+                                        ? Color.fromARGB(255, 255, 35, 35)
+                                        : Color.fromARGB(255, 21, 255, 52),
+                                  ),
+                                ),
+                                Icon(
+                                  click == true ? Icons.stop : Icons.play_arrow,
+                                  color: click == true
+                                      ? Color.fromARGB(255, 255, 35, 35)
+                                      : Color.fromARGB(255, 21, 255, 52),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      splashColor: kPrimaryColor.withAlpha(30),
+                      onTap: () {
+                        _getUserLocation();
+                        _ButtomClick();
+                        startServiceInAndroid();
+
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              //text with status localização
+              Center(
+                child: Text(
+                  "Status da captura: $status",
+                  style: TextStyle(fontSize: 15),
+                ),
+              ),
+              Center(
+                child: Text(
+                  "Tempo de captura: $tempo",
+                  style: TextStyle(fontSize: 15),
+                ),
+              ),
             ],
           ),
         ),
-        /* child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Home test',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ), */
       ),
     );
   }

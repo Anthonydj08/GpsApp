@@ -6,7 +6,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final db = DatabaseHandler();
   await db.initializeDB();
-
   runApp(
     const Routes(),
   );

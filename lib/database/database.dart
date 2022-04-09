@@ -83,7 +83,8 @@ class DatabaseHandler {
 
   Future<List<LocalModel>> listarLocais() async {
     final Database db = await initializeDB();
-    final List<Map<String, dynamic>> queryResult = await db.query('Locais');
+    //listar ultimos 10 locais
+    final List<Map<String, dynamic>> queryResult = await db.query('Locais',limit: 10);
     return List.generate(queryResult.length, (i) {
       return LocalModel(
         id: queryResult[i]['id'],

@@ -15,6 +15,6 @@ class RotaModel {
 
   @override
   String toString() {
-    return 'Pessoa{id: $id, titulo: $titulo, tempo: $tempo}';
+    return 'Rota{id: $id, titulo: $titulo, tempo: $tempo}';
   }
 }

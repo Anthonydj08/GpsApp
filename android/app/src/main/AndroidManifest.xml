@@ -1,11 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.gps_app">
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
    <application
         android:label="gps_app"
-        android:name="${applicationName}"
+        android:name=".MainApplication"
         android:icon="@mipmap/ic_launcher">
+        <service android:name=".MyService"/>
         <meta-data android:name="com.google.android.geo.API_KEY"
                android:value="AIzaSyA_ztUeRrky_gYmsbnsKnfE6tOPGC_ABhg"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

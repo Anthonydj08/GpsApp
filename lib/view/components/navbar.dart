@@ -1,6 +1,11 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'package:gps_app/view/map.dart';
+import 'package:gps_app/view/configuracoes.dart';
+import 'package:gps_app/view/listaLocais.dart';
+import 'package:gps_app/view/listaRotas.dart';
+import 'package:gps_app/view/mapScreen.dart';
 import 'package:sizer/sizer.dart';
 import 'package:gps_app/view/home.dart';
 
@@ -18,47 +23,43 @@ class _NavBarState extends State<NavBar> {
   final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
   _NavBarState();
 
-  int index = 1;
+  int index = 0;
 
   @override
   Widget build(BuildContext context) {
-    
     final screens = [
       Home(),
-      Map(),
-      Home(),
-      Home(),
-      Home(),
+      MapScreen(),
+      ListaRotas(),
+      ListaLocais(),
+      Configuracoes(),
     ];
 
     return Scaffold(
       body: screens[index],
       bottomNavigationBar: CurvedNavigationBar(
-        
         key: _bottomNavigationKey,
         index: 0,
         height: 50.0,
-        items: <Widget>[
+        items: const <Widget>[
           Icon(Icons.home, size: 30),
-          Icon(Icons.search, size: 30),
-          Icon(Icons.add_circle, size: 30),
-          Icon(Icons.favorite, size: 30),
-          Icon(Icons.person, size: 30),
+          Icon(Icons.map, size: 30),
+          Icon(Icons.near_me_sharp, size: 30),
+          Icon(Icons.place, size: 30),
+          Icon(Icons.settings, size: 30),
         ],
         color: kPrimaryColor,
         buttonBackgroundColor: kPrimaryColor,
         backgroundColor: kPrimaryColor,
         animationCurve: Curves.easeInOut,
-        animationDuration: Duration(milliseconds: 600),
+        animationDuration: Duration(milliseconds: 400),
         onTap: (index) {
           setState(() {
-                this.index = index;
-              });
-              
+            this.index = index;
+          });
         },
         letIndexChange: (index) => true,
       ),
     );
   }
-
 }
