@@ -112,19 +112,34 @@ class _BodyState extends State<Home> {
   }
 
   _watchStart() {
+    stopwatch.reset();
     stopwatch.start();
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(
+        () {
+          tempo = stopwatch.elapsed.inHours.toString().padLeft(2, '0') +
+              ":" +
+              (stopwatch.elapsed.inMinutes % 60).toString().padLeft(2, '0') +
+              ":" +
+              (stopwatch.elapsed.inSeconds % 60).toString().padLeft(2, '0');
+        },
+      );
+    });
   }
 
   _watchStop() {
     stopwatch.stop();
-    tempo = stopwatch.elapsed.toString();
-    stopwatch.reset();
   }
 
   _novaRota() {
     _watchStart();
     DateTime newDate = DateTime.now();
-    String date = newDate.toString().substring(0, 10);
+    String date = newDate.day.toString().padLeft(2, '0') +
+        "/" +
+        newDate.month.toString().padLeft(2, '0') +
+        "/" +
+        newDate.year.toString();
+
     rota = RotaModel(titulo: date, tempo: tempo);
     rotaController.salvarRota(rota);
 
@@ -155,9 +170,10 @@ class _BodyState extends State<Home> {
     rota = await rotaController.buscarUltimaRota();
     int idRota = rota.id!;
     local = LocalModel(
-        latitude: _userLocation.latitude!.toString(),
-        longitude: _userLocation.longitude!.toString(),
-        idRota: idRota,);
+      latitude: _userLocation.latitude!.toString(),
+      longitude: _userLocation.longitude!.toString(),
+      idRota: idRota,
+    );
     localController.salvarLocal(local);
   }
 
@@ -201,7 +217,7 @@ class _BodyState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       appBar: AppBar(
+      appBar: AppBar(
         title: const Text(
           "Home",
           style: TextStyle(
@@ -212,7 +228,7 @@ class _BodyState extends State<Home> {
         ),
       ),
       body: SingleChildScrollView(
-        physics: NeverScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         child: SizedBox(
           height: 100.h,
           child: Column(
@@ -264,7 +280,7 @@ class _BodyState extends State<Home> {
                   width: 60.w,
                   height: 11.h,
                   child: Card(
-                    color: Color.fromARGB(255, 212, 212, 212),
+                    color: const Color.fromARGB(255, 212, 212, 212),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(2.h),
                       side: BorderSide(
@@ -285,15 +301,15 @@ class _BodyState extends State<Home> {
                                   style: TextStyle(
                                     fontSize: 20.sp,
                                     color: click == true
-                                        ? Color.fromARGB(255, 255, 35, 35)
-                                        : Color.fromARGB(255, 21, 255, 52),
+                                        ? const Color.fromARGB(255, 255, 35, 35)
+                                        : const Color.fromARGB(255, 21, 255, 52),
                                   ),
                                 ),
                                 Icon(
                                   click == true ? Icons.stop : Icons.play_arrow,
                                   color: click == true
-                                      ? Color.fromARGB(255, 255, 35, 35)
-                                      : Color.fromARGB(255, 21, 255, 52),
+                                      ? const Color.fromARGB(255, 255, 35, 35)
+                                      : const Color.fromARGB(255, 21, 255, 52),
                                 ),
                               ],
                             ),
@@ -304,8 +320,7 @@ class _BodyState extends State<Home> {
                       onTap: () {
                         _getUserLocation();
                         _ButtomClick();
-                        startServiceInAndroid();
-
+                        click == true ? startServiceInAndroid() : stopServiceInAndroid();
                       },
                     ),
                   ),
@@ -315,13 +330,13 @@ class _BodyState extends State<Home> {
               Center(
                 child: Text(
                   "Status da captura: $status",
-                  style: TextStyle(fontSize: 15),
+                  style: const TextStyle(fontSize: 15),
                 ),
               ),
               Center(
                 child: Text(
                   "Tempo de captura: $tempo",
-                  style: TextStyle(fontSize: 15),
+                  style: const TextStyle(fontSize: 15),
                 ),
               ),
             ],

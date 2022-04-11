@@ -29,9 +29,10 @@ class _NavBarState extends State<NavBar> {
   Widget build(BuildContext context) {
     final screens = [
       Home(),
-      MapScreen(),
+      //MapScreen(locais: [],),
       ListaRotas(),
       ListaLocais(),
+      Configuracoes(),
       Configuracoes(),
     ];
 
@@ -43,10 +44,11 @@ class _NavBarState extends State<NavBar> {
         height: 50.0,
         items: const <Widget>[
           Icon(Icons.home, size: 30),
-          Icon(Icons.map, size: 30),
+          //Icon(Icons.map, size: 30),
           Icon(Icons.near_me_sharp, size: 30),
           Icon(Icons.place, size: 30),
           Icon(Icons.settings, size: 30),
+          Icon(Icons.circle, size: 30),
         ],
         color: kPrimaryColor,
         buttonBackgroundColor: kPrimaryColor,

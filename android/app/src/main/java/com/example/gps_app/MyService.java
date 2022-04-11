@@ -41,8 +41,8 @@ public class MyService extends Service {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationCompat.Builder builder =
                     new NotificationCompat.Builder(this, "messages")
-                            .setContentTitle("Flutter background music")
-                            .setContentText("Está tocando a música em background")
+                            .setContentTitle("Gps Tracker")
+                            .setContentText("Caminhe com segurança e sempre!")
                             .setSmallIcon(R.drawable.launch_background)
                             .setStyle(new NotificationCompat.BigPictureStyle()
                                     .bigPicture(toBitmap(R.drawable.bom_dia)));

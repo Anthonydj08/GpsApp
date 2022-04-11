@@ -19,4 +19,8 @@ class LocalController {
   Future<List<LocalModel>> listarLocaisPorRota(int idRota) async {
     return await db.buscarLocaisPorRota(idRota);
   }
+
+  Future<void> atualizarLocal(LocalModel local) async {
+    await db.updateLocal(local);
+  }
 }

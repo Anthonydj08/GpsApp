@@ -3,6 +3,7 @@ import 'package:gps_app/controller/localController.dart';
 import 'package:gps_app/model/LocalPorRotaModel.dart';
 import 'package:gps_app/model/rotaModel.dart';
 import 'package:gps_app/view/detalheLocal.dart';
+import 'package:gps_app/view/mapScreen.dart';
 import 'package:sizer/sizer.dart';
 
 import '../constants.dart';
@@ -11,20 +12,19 @@ class DetalheRota extends StatefulWidget {
   final RotaModel rota;
   final LocalPorRotaModel locaisPorRota;
 
-  const DetalheRota({Key? key, required this.rota, required this.locaisPorRota }) : super(key: key);
+  const DetalheRota({Key? key, required this.rota, required this.locaisPorRota})
+      : super(key: key);
   static String routeName = "/historico";
-  
+
   @override
   _DetalheRotaState createState() => _DetalheRotaState();
 }
 
 class _DetalheRotaState extends State<DetalheRota> {
-  
   late RotaModel rota;
   late LocalPorRotaModel locaisPorRota;
   LocalController localController = LocalController();
 
-  
   @override
   void initState() {
     super.initState();
@@ -40,7 +40,6 @@ class _DetalheRotaState extends State<DetalheRota> {
     });
   }
 
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,7 +61,6 @@ class _DetalheRotaState extends State<DetalheRota> {
       ),
       body: Column(
         children: <Widget>[
-          Text("Detalhe da Rota"),
           Text("Nome: ${rota.titulo}"),
           Expanded(
             child: ListView.builder(
@@ -80,11 +78,12 @@ class _DetalheRotaState extends State<DetalheRota> {
                     ),
                     onTap: () {
                       Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  DetalheLocal(local: locaisPorRota.locais[index]))
-                        );
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DetalheLocal(local: locaisPorRota.locais[index]),
+                        ),
+                      );
                     },
                   ),
                   elevation: 4,
@@ -96,52 +95,59 @@ class _DetalheRotaState extends State<DetalheRota> {
               },
             ),
           ),
-          //botao para ir para pagina de desenhar rota
-           Center(
-                child: SizedBox(
-                  width: 60.w,
-                  height: 11.h,
-                  child: Card(
-                    color: Color.fromARGB(255, 212, 212, 212),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(2.h),
-                      side: BorderSide(
-                        color: kPrimaryLightColor,
-                        width: 0.5.w,
-                      ),
-                    ),
-                    child: InkWell(
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            height: 10.h,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                 'Ir para rota',
-                                  style: TextStyle(
-                                    fontSize: 20.sp,
-                                    color: const Color.fromARGB(255, 21, 51, 25),
-                                  ),
-                                ),
-                                const Icon(
-                                  Icons.arrow_forward,
-                                  color: Color.fromARGB(255, 10, 85, 20),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      splashColor: kPrimaryColor.withAlpha(30),
-                      onTap: () {
-                        
-                      },
-                    ),
+          Center(
+            child: SizedBox(
+              width: 60.w,
+              height: 11.h,
+              child: Card(
+                color: const Color.fromARGB(255, 212, 212, 212),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(2.h),
+                  side: BorderSide(
+                    color: kPrimaryLightColor,
+                    width: 0.5.w,
                   ),
                 ),
+                child: InkWell(
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 10.h,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Ver rota',
+                              style: TextStyle(
+                                fontSize: 20.sp,
+                                color: const Color.fromARGB(255, 21, 51, 25),
+                              ),
+                            ),
+                            const Icon(
+                              Icons.arrow_forward,
+                              color: Color.fromARGB(255, 10, 85, 20),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  splashColor: kPrimaryColor.withAlpha(30),
+                  onTap: () {
+                    //ir para a pagina de rota passando rotas
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MapScreen(
+                          locais: locaisPorRota.locais,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
+            ),
+          ),
         ],
       ),
     );

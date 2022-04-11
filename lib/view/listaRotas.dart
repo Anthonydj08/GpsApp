@@ -84,7 +84,7 @@ class _ListaRotasState extends State<ListaRotas> {
                       title: Text(_listaRotas[index].titulo),
                       subtitle: Text(
                         //tempo e id
-                        "Tempo: ${_listaRotas[index].tempo} \nId: ${_listaRotas[index].id}, \nNº locais: ${_listaLocaisPorRota[index].locais.length}",
+                        "Tempo: ${_listaRotas[index].tempo} \nId: ${_listaRotas[index].id} \nNº locais: ${_listaLocaisPorRota[index].locais.length}",
                       ),
                       onTap: () {
                         Navigator.push(
@@ -98,7 +98,7 @@ class _ListaRotasState extends State<ListaRotas> {
                         );
                       },
                       trailing: IconButton(
-                        icon: Icon(Icons.delete),
+                        icon: const Icon(Icons.delete),
                         onPressed: () {
                           rotaController.deletarRota(_listaRotas[index].id!);
                           _listaRotas.removeAt(index);
@@ -110,7 +110,7 @@ class _ListaRotasState extends State<ListaRotas> {
                 },
               );
             } else {
-              return Center(
+              return const Center(
                 child: CircularProgressIndicator(),
               );
             }

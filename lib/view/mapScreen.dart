@@ -1,21 +1,17 @@
-// ignore_for_file: file_names, prefer_const_constructors
-
 import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:gps_app/controller/localController.dart';
-import 'package:gps_app/controller/rotaController.dart';
 import 'package:gps_app/model/localModel.dart';
-import 'package:gps_app/model/rotaModel.dart';
-import 'package:location/location.dart';
 import 'package:sizer/sizer.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geocoding/geocoding.dart' as Geocoding;
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({Key? key}) : super(key: key);
+  final List<LocalModel> locais;
+
+  const MapScreen({Key? key, required this.locais}) : super(key: key);
   static String routeName = "/map";
 
   @override
@@ -24,13 +20,6 @@ class MapScreen extends StatefulWidget {
 
 class _BodyMapState extends State<MapScreen> {
   GoogleMapController? mapController;
-  RotaController rotaController = RotaController();
-  LocalController localController = LocalController();
-
-  late LocalModel local;
-  late RotaModel rota;
-  LatLng _origem = const LatLng(0.0, 0.0);
-  LatLng _destino = const LatLng(0.0, 0.0);
 
   Map<MarkerId, Marker> markers = {};
   Map<PolylineId, Polyline> polylines = {};
@@ -38,26 +27,68 @@ class _BodyMapState extends State<MapScreen> {
   PolylinePoints polylinePoints = PolylinePoints();
   String googleAPiKey = 'AIzaSyA_ztUeRrky_gYmsbnsKnfE6tOPGC_ABhg';
 
-  late LatLng SOURCE_LOCATION = LatLng(-8.874906, -36.462927);
-  late LatLng DEST_LOCATION = LatLng(-8.876484, -36.474340);
   late String localInicio = '';
   late String localDestino = '';
   late String distanciaTotal = '';
 
-  late Geocoding.Placemark localAtual = Geocoding.Placemark();
+  late List<LocalModel> locais = [];
+
+  List<PolylineWayPoint> wayPoints = [];
+  late PointLatLng inicio;
+  late PointLatLng destino;
+
+  //obj json inicio
+  var jsonInicio = {
+    "latInicio": '',
+    "lngInicio": '',
+    "latDestino": '',
+    "lngDestino": '',
+  };
 
   @override
   void initState() {
     super.initState();
+    locais = widget.locais;
+
+    //primeiro local
+    var primeiroLocal = locais[0];
+    var ultimoLocal = locais[locais.length - 1];
+    jsonInicio = {
+      "latInicio": primeiroLocal.latitude.toString(),
+      "lngInicio": primeiroLocal.longitude.toString(),
+      "latDestino": ultimoLocal.latitude.toString(),
+      "lngDestino": ultimoLocal.longitude.toString(),
+    };
+    _setWayPoints();
 
     /// origin marker
-    _addMarker(LatLng(SOURCE_LOCATION.latitude, SOURCE_LOCATION.longitude),
-        "origin", BitmapDescriptor.defaultMarker);
+    _addMarker(
+        LatLng(double.parse(primeiroLocal.latitude),
+            double.parse(primeiroLocal.longitude)),
+        "origin",
+        BitmapDescriptor.defaultMarkerWithHue(90));
 
     /// destination marker
-    _addMarker(LatLng(DEST_LOCATION.latitude, DEST_LOCATION.longitude),
-        "destination", BitmapDescriptor.defaultMarkerWithHue(90));
+    _addMarker(
+        LatLng(double.parse(ultimoLocal.latitude),
+            double.parse(ultimoLocal.longitude)),
+        "destination",
+        BitmapDescriptor.defaultMarker);
+
     _getPolyline();
+  }
+
+  _setWayPoints() {
+    inicio = PointLatLng(double.parse(jsonInicio['latInicio']!),
+        double.parse(jsonInicio['lngInicio']!));
+    destino = PointLatLng(double.parse(jsonInicio['latDestino']!),
+        double.parse(jsonInicio['lngDestino']!));
+    for (var i = 0; i < locais.length; i++) {
+      if (i > 0 && i < locais.length - 1) {
+        wayPoints.add(PolylineWayPoint(
+            location: locais[i].latitude + ',' + locais[i].longitude));
+      }
+    }
   }
 
   _addMarker(LatLng position, String id, BitmapDescriptor descriptor) {
@@ -74,10 +105,8 @@ class _BodyMapState extends State<MapScreen> {
 
   _getPolyline() async {
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-        'AIzaSyA_ztUeRrky_gYmsbnsKnfE6tOPGC_ABhg',
-        PointLatLng(SOURCE_LOCATION.latitude, SOURCE_LOCATION.longitude),
-        PointLatLng(DEST_LOCATION.latitude, DEST_LOCATION.longitude),
-        travelMode: TravelMode.driving);
+        googleAPiKey, inicio, destino,
+        wayPoints: wayPoints, travelMode: TravelMode.walking);
     if (result.points.isNotEmpty) {
       for (var point in result.points) {
         polylineCoordinates.add(LatLng(point.latitude, point.longitude));
@@ -104,37 +133,23 @@ class _BodyMapState extends State<MapScreen> {
   }
 
   _addPolyLine() {
-    PolylineId id = PolylineId("poly");
+    PolylineId id = const PolylineId("poly");
     Polyline polyline = Polyline(
         polylineId: id, color: Colors.red, points: polylineCoordinates);
     polylines[id] = polyline;
     setState(() {});
   }
 
-  Future<void> _getFirstAndLastLocation() async {
-    localController.listarLocais().then(
-      (value) {
-        //get first local
-        local = value[0];
-        final lastLocal = value[value.length - 1];
-        setState(() {
-          _origem = LatLng(
-              double.parse(local.latitude), double.parse(local.longitude));
-          _destino = LatLng(double.parse(lastLocal.latitude),
-              double.parse(lastLocal.longitude));
-        });
-      },
-    );
-  }
-
   Future<void> _getUserLocation() async {
     setState(
       () {
         var inicio = Geocoding.placemarkFromCoordinates(
-            SOURCE_LOCATION.latitude, SOURCE_LOCATION.longitude,
+            double.parse(jsonInicio['latInicio']!),
+            double.parse(jsonInicio['lngInicio']!),
             localeIdentifier: "pt_BR");
         var fim = Geocoding.placemarkFromCoordinates(
-            DEST_LOCATION.latitude, DEST_LOCATION.longitude,
+            double.parse(jsonInicio['latDestino']!),
+            double.parse(jsonInicio['lngDestino']!),
             localeIdentifier: "pt_BR");
 
         inicio.then((value) {
@@ -153,13 +168,19 @@ class _BodyMapState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Ultima Rota",
-          style: TextStyle(
+        title: Text(
+          "Rota ${widget.locais[0].idRota}",
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Colors.black,
           ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
       ),
       body: Column(
@@ -170,10 +191,10 @@ class _BodyMapState extends State<MapScreen> {
               width: 90.w,
               height: 8.h,
               child: Card(
-                color: Color.fromARGB(255, 233, 233, 233),
+                color: const Color.fromARGB(255, 233, 233, 233),
                 shape: RoundedRectangleBorder(
                   side: BorderSide(
-                    color: Color.fromARGB(255, 128, 128, 128),
+                    color: const Color.fromARGB(255, 128, 128, 128),
                     width: 0.1.w,
                   ),
                 ),
@@ -181,16 +202,16 @@ class _BodyMapState extends State<MapScreen> {
                   padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                   child: Row(
                     children: <Widget>[
-                      Icon(
+                      const Icon(
                         Icons.location_on,
                         color: Color.fromARGB(255, 128, 128, 128),
                       ),
                       Expanded(
                         child: Text(
-                          '$localInicio',
+                          localInicio,
                           style: TextStyle(
                             fontSize: 2.h,
-                            color: Color.fromARGB(255, 128, 128, 128),
+                            color: const Color.fromARGB(255, 128, 128, 128),
                           ),
                         ),
                       ),
@@ -205,10 +226,10 @@ class _BodyMapState extends State<MapScreen> {
               width: 90.w,
               height: 8.h,
               child: Card(
-                color: Color.fromARGB(255, 233, 233, 233),
+                color: const Color.fromARGB(255, 233, 233, 233),
                 shape: RoundedRectangleBorder(
                   side: BorderSide(
-                    color: Color.fromARGB(255, 128, 128, 128),
+                    color: const Color.fromARGB(255, 128, 128, 128),
                     width: 0.1.w,
                   ),
                 ),
@@ -216,16 +237,16 @@ class _BodyMapState extends State<MapScreen> {
                   padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                   child: Row(
                     children: <Widget>[
-                      Icon(
+                      const Icon(
                         Icons.location_on,
                         color: Color.fromARGB(255, 128, 128, 128),
                       ),
                       Expanded(
                         child: Text(
-                          '$localDestino',
+                          localDestino,
                           style: TextStyle(
                             fontSize: 2.h,
-                            color: Color.fromARGB(255, 128, 128, 128),
+                            color: const Color.fromARGB(255, 128, 128, 128),
                           ),
                         ),
                       ),
@@ -241,7 +262,9 @@ class _BodyMapState extends State<MapScreen> {
               child: GoogleMap(
                 initialCameraPosition: CameraPosition(
                     target: LatLng(
-                        SOURCE_LOCATION.latitude, SOURCE_LOCATION.longitude),
+                      double.parse(jsonInicio['latInicio']!),
+                      double.parse(jsonInicio['lngInicio']!),
+                    ),
                     zoom: 15),
                 myLocationEnabled: true,
                 tiltGesturesEnabled: true,
@@ -256,8 +279,8 @@ class _BodyMapState extends State<MapScreen> {
           ),
           Center(
             child: Text(
-              "Distância total: $distanciaTotal" + " km",
-              style: TextStyle(fontSize: 20),
+              "Distância total: $distanciaTotal km",
+              style: const TextStyle(fontSize: 20),
             ),
           )
         ],

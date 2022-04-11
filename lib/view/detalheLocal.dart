@@ -29,7 +29,7 @@ class _DetalheRotaState extends State<DetalheLocal> {
   void initState() {
     super.initState();
     local = widget.local;
-    var timer = Timer(Duration(seconds: 1), () => _getUserLocation());
+    Timer(const Duration(seconds: 1), () => _getUserLocation());
   }
 
   Future<void> _getUserLocation() async {
