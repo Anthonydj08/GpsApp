@@ -93,7 +93,6 @@ class _BodyState extends State<Home> {
     String street = "";
     _local = LatLng(_userLocation.latitude!, _userLocation.longitude!);
     Future<List<Geocoding.Placemark>> places;
-    print(_local);
 
     setState(
       () {
@@ -177,7 +176,7 @@ class _BodyState extends State<Home> {
     localController.salvarLocal(local);
   }
 
-  _ButtomClick() {
+  _buttomClick() {
     click == false ? click = true : click = false;
     if (click == true) {
       _novaRota();
@@ -302,7 +301,8 @@ class _BodyState extends State<Home> {
                                     fontSize: 20.sp,
                                     color: click == true
                                         ? const Color.fromARGB(255, 255, 35, 35)
-                                        : const Color.fromARGB(255, 21, 255, 52),
+                                        : const Color.fromARGB(
+                                            255, 21, 255, 52),
                                   ),
                                 ),
                                 Icon(
@@ -319,8 +319,16 @@ class _BodyState extends State<Home> {
                       splashColor: kPrimaryColor.withAlpha(30),
                       onTap: () {
                         _getUserLocation();
-                        _ButtomClick();
-                        click == true ? startServiceInAndroid() : stopServiceInAndroid();
+                        _buttomClick();
+                        click == true
+                            ? startServiceInAndroid()
+                            : stopServiceInAndroid();
+                        final snackBar = SnackBar(
+                          content: Text(
+                              click == true ? 'Iniciando...' : 'Parando...'),
+                          behavior: SnackBarBehavior.floating,
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
                       },
                     ),
                   ),

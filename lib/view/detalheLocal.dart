@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:gps_app/controller/localController.dart';
 import 'package:gps_app/model/enderecoModel.dart';
 import 'package:gps_app/model/localModel.dart';
-import 'package:geocoding/geocoding.dart' as Geocoding;
+import 'package:geocoding/geocoding.dart' as _geocoding;
 
 class DetalheLocal extends StatefulWidget {
   final LocalModel local;
@@ -35,12 +35,12 @@ class _DetalheRotaState extends State<DetalheLocal> {
   Future<void> _getUserLocation() async {
     setState(
       () {
-        var res = Geocoding.placemarkFromCoordinates(
+        var res = _geocoding.placemarkFromCoordinates(
             double.parse(local.latitude), double.parse(local.longitude),
             localeIdentifier: "pt_BR");
 
         res.then((value) {
-          Geocoding.Placemark place = value[0];
+          _geocoding.Placemark place = value[0];
           endereco = EnderecoModel(
             cep: place.postalCode!,
             cidade: place.subAdministrativeArea!,
@@ -50,7 +50,7 @@ class _DetalheRotaState extends State<DetalheLocal> {
             pais: place.country!,
           );
         });
-      },
+      },      
     );
   }
 

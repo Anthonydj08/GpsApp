@@ -5,17 +5,28 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gps_app/routes.dart';
-
 
 void main() {
-  testWidgets('MyWidget', (WidgetTester tester) async {
-   
-    await tester.pumpWidget(Routes());
-    var textField = find.byType(CurvedNavigationBar);
-    expect(textField, findsOneWidget);
-    
-  });
+  testWidgets(
+    'When build page '
+    'Should find the text',
+    (tester) async {
+      await _createWidget2(tester);
+      await tester.pump();
+      expect(find.text('Flutter Demo'), findsOneWidget);
+    },
+  );
+}
+
+Future<void> _createWidget2(tester) async {
+  const mt = MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Text('Flutter Demo'),
+        ),
+      ),
+    );
+  return await tester.pumpWidget(mt);
 }

@@ -30,7 +30,9 @@ class _ListaRotasState extends State<ListaRotas> {
     _listaRotas = [];
     rotaController.listarRotas().then(
       (value) {
-        value.forEach((rota) => _listaRotas.add(rota));
+        for (var rota in value) {
+          _listaRotas.add(rota);
+        }
         print(_listaRotas);
       },
     );
@@ -71,52 +73,62 @@ class _ListaRotasState extends State<ListaRotas> {
           ),
         ),
       ),
-      body: Container(
-        child: FutureBuilder(
-          future: _listRotas(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return ListView.builder(
-                itemCount: _listaRotas.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    child: ListTile(
-                      title: Text(_listaRotas[index].titulo),
-                      subtitle: Text(
-                        //tempo e id
-                        "Tempo: ${_listaRotas[index].tempo} \nId: ${_listaRotas[index].id} \nNº locais: ${_listaLocaisPorRota[index].locais.length}",
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DetalheRota(
-                              rota: _listaRotas[index],
-                              locaisPorRota: _listaLocaisPorRota[index],
-                            ),
+      body: _listaRotas.isEmpty
+          ? const Center(
+              child: Text(
+                "Nenhuma rota cadastrada",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+            )
+          : FutureBuilder(
+              future: _listRotas(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return ListView.builder(
+                    itemCount: _listaRotas.length,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        child: ListTile(
+                          title: Text(_listaRotas[index].titulo),
+                          subtitle: Text(
+                            //tempo e id
+                            "Tempo: ${_listaRotas[index].tempo} \nId: ${_listaRotas[index].id} \nNº locais: ${_listaLocaisPorRota[index].locais.length}",
                           ),
-                        );
-                      },
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          rotaController.deletarRota(_listaRotas[index].id!);
-                          _listaRotas.removeAt(index);
-                          setState(() {});
-                        },
-                      ),
-                    ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DetalheRota(
+                                  rota: _listaRotas[index],
+                                  locaisPorRota: _listaLocaisPorRota[index],
+                                ),
+                              ),
+                            );
+                          },
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () {
+                              rotaController
+                                  .deletarRota(_listaRotas[index].id!);
+                              _listaRotas.removeAt(index);
+                              setState(() {});
+                            },
+                          ),
+                        ),
+                      );
+                    },
                   );
-                },
-              );
-            } else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-          },
-        ),
-      ),
+                } else {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+              },
+            ),
     );
   }
 }

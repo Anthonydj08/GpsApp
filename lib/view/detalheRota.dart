@@ -63,7 +63,18 @@ class _DetalheRotaState extends State<DetalheRota> {
         children: <Widget>[
           Text("Nome: ${rota.titulo}"),
           Expanded(
-            child: ListView.builder(
+            child: locaisPorRota.locais.isEmpty
+                ? const Center(
+                    child: Text(
+                      "Nenhum local cadastrado",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  )
+            : ListView.builder(
               itemCount: locaisPorRota.locais.length,
               itemBuilder: (context, index) {
                 return Card(

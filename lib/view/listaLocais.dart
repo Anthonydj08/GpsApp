@@ -17,7 +17,7 @@ class ListaLocais extends StatefulWidget {
 class _ListaLocaisState extends State<ListaLocais> {
   LocalController localController = LocalController();
   List<LocalModel> _listaLocais = [];
-  late var _listaLocaisPorRota = [];
+  late final _listaLocaisPorRota = [];
 
   @override
   void initState() {
@@ -110,7 +110,7 @@ class _ListaLocaisState extends State<ListaLocais> {
                           _listaLocais[index].idRota.toString(),
                     ),
                     trailing: IconButton(
-                      icon: Icon(Icons.delete),
+                      icon: const Icon(Icons.delete),
                       onPressed: () {
                         localController.deletarLocal(_listaLocais[index].id!);
                         _listaLocais.removeAt(index);
@@ -122,7 +122,7 @@ class _ListaLocaisState extends State<ListaLocais> {
               },
             );
           } else {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(),
             );
           }

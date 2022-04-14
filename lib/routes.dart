@@ -4,6 +4,7 @@ import 'package:gps_app/theme.dart';
 import 'package:gps_app/view/components/navbar.dart';
 import 'package:sizer/sizer.dart';
 
+
 class Routes extends StatelessWidget {
   const Routes({Key? key}) : super(key: key);
 
@@ -16,7 +17,7 @@ class Routes extends StatelessWidget {
           title: 'GPS',
           theme: theme(),
           initialRoute: NavBar.routeName,
-          routes: {NavBar.routeName: (context) => const NavBar()},
+          routes: {'/': (context) => const NavBar()},
         );
       },
     );

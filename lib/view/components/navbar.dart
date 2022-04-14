@@ -5,15 +5,13 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:gps_app/view/configuracoes.dart';
 import 'package:gps_app/view/listaLocais.dart';
 import 'package:gps_app/view/listaRotas.dart';
-import 'package:gps_app/view/mapScreen.dart';
-import 'package:sizer/sizer.dart';
 import 'package:gps_app/view/home.dart';
 
 import '../../constants.dart';
 
 class NavBar extends StatefulWidget {
   const NavBar({Key? key}) : super(key: key);
-  static String routeName = "/bottom_bar";
+  static String routeName = "/";
 
   @override
   _NavBarState createState() => _NavBarState();
