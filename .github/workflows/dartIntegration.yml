@@ -1,25 +1,51 @@
-- name: Dart and Flutter Package Publisher
-  # You may pin to the exact commit or the version.
-  # uses: k-paxian/dart-package-publisher@cf42c35a2a6f3e2e4cd4a6e60450c6de75f4ba67
-  uses: k-paxian/dart-package-publisher@v1.4
-  with:
-    # (Required) Token from ~/.pub-cache/credentials.json. Use secrets.OAUTH_ACCESS_TOKEN
-    accessToken: 
-    # (Required) Token from ~/.pub-cache/credentials.json. Use secrets.OAUTH_REFRESH_TOKEN
-    refreshToken: 
-    # (Optional) Overrides accessToken and refreshToken. Whole content of ~/.pub-cache/credentials.json. Use secrets.CREDENTIAL_JSON
-    credentialJson: # optional
-    # (Optional) Path to your package root in your repository
-    relativePath: # optional, default is 
-    # (Optional) Perform dry run only, no real publishing
-    dryRunOnly: # optional
-    # (Optional) Skip unit tests run
-    skipTests: # optional
-    # (Optional) Suppress using `build_runner` for unit tests run
-    suppressBuildRunner: # optional
-    # (Optional) Format code of project to get better score in pub.dev
-    format: # optional
-    # (Optional) Force publishing even if pub tool throws warnings, hints, etc
-    force: # optional
-    # (Optional) Flutter package type
-    flutter: # optional
+name: flutter drive
+# Trigger the workflow on push or pull request.
+on: [push, pull_request]
+# A workflow run is made up of one or more jobs.
+jobs:
+  # id of job, a string that is unique to the "jobs" node above.
+  drive:
+    # Creates a build matrix for your jobs. You can define different
+    # variations of an environment to run each job in.
+    strategy:
+      # A set of different configurations of the virtual  
+      # environment.
+      matrix:
+        device:
+        - "iPhone 8 (13.1)"
+        - "iPhone 11 Pro Max (13.1)"
+      # When set to true, GitHub cancels all in-progress jobs if any        
+      # matrix job fails.
+      fail-fast: false
+    # The type of machine to run the job on.
+    runs-on: macOS-latest
+    # Contains a sequence of tasks.
+    steps:
+    # A name for your step to display on GitHub.
+    - name: "List all simulators"
+      run: "xcrun instruments -s"
+    - name: "Start Simulator"
+      run: |
+        UDID=$(
+          xcrun instruments -s |
+          awk \
+            -F ' *[][]' \
+            -v 'device=${{ matrix.device }}' \
+            '$1 == device { print $2 }'
+        )
+        xcrun simctl boot "${UDID:?No Simulator with this name found}"
+    # The branch or tag ref that triggered the workflow will be 
+    # checked out.
+    # https://github.com/actions/checkout
+    - uses: actions/checkout@v1
+      with:
+          flutter-version: '2.10.0'
+          channel: 'stable'
+    # Sets up a flutter environment.
+    # https://github.com/marketplace/actions/flutter-action
+    - uses: subosito/flutter-action@v1
+      with:
+        flutter-version: '2.10.0'
+        channel: 'stable' # or: 'dev' or 'beta'
+    - name: "Run Flutter Driver tests"
+      run: "flutter drive --target=integration_test\app_test.dart"
