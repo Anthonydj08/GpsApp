@@ -1,21 +1,25 @@
-jobs:
-  test:
-    name: Test on node ${{ matrix.node_version }} and ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        node_version: ['8', '10', '12']
-        os: [ubuntu-latest, windows-latest, macOS-latest]
-
-    steps:
-    - uses: actions/checkout@v1
-    - name: Use Node.js ${{ matrix.node_version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node_version }}
-
-    - name: npm install, build and test
-      run: |
-        npm install
-        npm run build --if-present
-        npm test
+- name: Dart and Flutter Package Publisher
+  # You may pin to the exact commit or the version.
+  # uses: k-paxian/dart-package-publisher@cf42c35a2a6f3e2e4cd4a6e60450c6de75f4ba67
+  uses: k-paxian/dart-package-publisher@v1.4
+  with:
+    # (Required) Token from ~/.pub-cache/credentials.json. Use secrets.OAUTH_ACCESS_TOKEN
+    accessToken: 
+    # (Required) Token from ~/.pub-cache/credentials.json. Use secrets.OAUTH_REFRESH_TOKEN
+    refreshToken: 
+    # (Optional) Overrides accessToken and refreshToken. Whole content of ~/.pub-cache/credentials.json. Use secrets.CREDENTIAL_JSON
+    credentialJson: # optional
+    # (Optional) Path to your package root in your repository
+    relativePath: # optional, default is 
+    # (Optional) Perform dry run only, no real publishing
+    dryRunOnly: # optional
+    # (Optional) Skip unit tests run
+    skipTests: # optional
+    # (Optional) Suppress using `build_runner` for unit tests run
+    suppressBuildRunner: # optional
+    # (Optional) Format code of project to get better score in pub.dev
+    format: # optional
+    # (Optional) Force publishing even if pub tool throws warnings, hints, etc
+    force: # optional
+    # (Optional) Flutter package type
+    flutter: # optional
