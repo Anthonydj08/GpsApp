@@ -1,22 +1,13 @@
-drive_android:
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        api-level: [21, 29]
-        target: [default]
+name: test
+on: [push, workflow_dispatch]
+jobs:
+  drive:
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: subosito/flutter-action@v1
-        with:
-          flutter-version: '2.10.0'
-          channel: 'stable'
-      - name: "Run Flutter Driver tests"
-        #Operation for installing, configuring and running Android simulator (MAC OS only)
-        # https://github.com/marketplace/actions/android-emulator-runner
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.target }}
-          arch: x86_64
-          profile: Nexus 6
-          script: "flutter drive --target=integration_test\app_test.dart"
+    - uses: actions/checkout@v1
+    - uses: subosito/flutter-action@v1
+      with:
+        channel: 'stable'
+    - run: |
+           flutter config --enable-windows-desktop
+           flutter test -d windows integration_test\app_test.dart
